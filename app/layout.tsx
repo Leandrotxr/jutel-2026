@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Alice, Outfit } from "next/font/google";
 import { Header } from "@/components/header";
-import { TournamentProvider } from "@/contexts/tournament";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const alice = Alice({
@@ -24,10 +24,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className={`${alice.variable} ${outfit.variable} h-full antialiased`}>
       <body className="wonder-body min-h-full font-sans text-[#f7f4ff]">
-        <Header />
-        <TournamentProvider>
+        <Providers>
+          <Header />
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-        </TournamentProvider>
+        </Providers>
       </body>
     </html>
   );

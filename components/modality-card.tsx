@@ -1,18 +1,23 @@
 import { TEAM_BY_ID } from "@/constants/teams";
 import { championOf } from "@/lib/bracket";
-import type { Modality, ResolvedMatch } from "@/lib/types";
+import { swimmingEventsPlayed, swimmingLeader } from "@/lib/swimming";
+import type { Modality, ResolvedMatch, SwimResult } from "@/lib/types";
 import Link from "next/link";
 
 export function ModalityCard({
   modality,
   matches,
+  swimResults = {},
 }: {
   modality: Modality;
   matches: ResolvedMatch[];
+  swimResults?: Record<string, SwimResult>;
 }) {
   const played = matches.filter((match) => match.status === "played").length;
-  const champion = championOf(matches);
+  const champion =
+    modality.format === "natacao" ? swimmingLeader(modality.id, swimResults) : championOf(matches);
   const championTeam = champion ? TEAM_BY_ID[champion] : null;
+  const swimPlayed = modality.format === "natacao" ? swimmingEventsPlayed(modality.id, swimResults) : 0;
 
   return (
     <Link
@@ -32,6 +37,10 @@ export function ModalityCard({
           <span className="rounded-full bg-white/10 px-2 py-1 text-[11px] text-white/70">
             Em breve
           </span>
+        ) : modality.format === "natacao" ? (
+          <span className="rounded-full bg-[#3ecfcf]/15 px-2 py-1 text-[11px] text-[#9ff6f6]">
+            {swimPlayed}/6 provas
+          </span>
         ) : (
           <span className="rounded-full bg-[#3ecfcf]/15 px-2 py-1 text-[11px] text-[#9ff6f6]">
             {played}/{matches.length} jogos
@@ -40,12 +49,14 @@ export function ModalityCard({
       </div>
       <p className="mt-4 text-sm text-white/60">
         {championTeam
-          ? `Campeão: ${championTeam.shortName}`
+          ? `${modality.format === "natacao" && swimPlayed < 6 ? "Líder" : "Campeão"}: ${championTeam.shortName}`
           : modality.excludedNote
             ? modality.excludedNote
             : modality.format === "em-breve"
               ? "Em breve"
-              : `${played} jogo${played === 1 ? "" : "s"} lançado${played === 1 ? "" : "s"}`}
+              : modality.format === "natacao"
+                ? `${swimPlayed} prova${swimPlayed === 1 ? "" : "s"} lançada${swimPlayed === 1 ? "" : "s"}`
+                : `${played} jogo${played === 1 ? "" : "s"} lançado${played === 1 ? "" : "s"}`}
       </p>
     </Link>
   );

@@ -1,11 +1,16 @@
 "use client";
 
 import { Bracket } from "@/components/bracket";
+import { SwimmingView } from "@/components/swimming-view";
 import { useModalityMatches } from "@/contexts/tournament";
 import type { Modality } from "@/lib/types";
 
 export function ModalityView({ modality }: { modality: Modality }) {
-  const { matches, saveResult, clearResult } = useModalityMatches(modality.id);
+  const { matches, saveResult, clearResult, saveSchedule } = useModalityMatches(modality.id);
+
+  if (modality.format === "natacao") {
+    return <SwimmingView modality={modality} />;
+  }
 
   if (modality.format === "em-breve") {
     return (
@@ -43,6 +48,7 @@ export function ModalityView({ modality }: { modality: Modality }) {
         matches={matches}
         onSave={saveResult}
         onClear={clearResult}
+        onSaveSchedule={saveSchedule}
       />
     </div>
   );

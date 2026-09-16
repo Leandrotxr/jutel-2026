@@ -111,5 +111,17 @@ export const ROUND_LABEL: Record<ResolvedMatch["round"], string> = {
 export function formatDate(value?: string) {
   if (!value) return "";
   const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
   return `${day}/${month}/${year}`;
+}
+
+export function formatTime(value?: string) {
+  if (!value) return "";
+  const [hours, minutes] = value.split(":");
+  if (!hours) return value;
+  return minutes && minutes !== "00" ? `${Number(hours)}h${minutes}` : `${Number(hours)}h`;
+}
+
+export function formatMatchWhen(match: { date?: string; time?: string; venue?: string }) {
+  return [formatDate(match.date), formatTime(match.time), match.venue].filter(Boolean).join(" · ");
 }

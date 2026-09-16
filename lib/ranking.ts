@@ -1,7 +1,9 @@
 import { MODALITIES } from "@/constants/modalities";
+import { SWIMMING_EVENTS } from "@/constants/swimming";
 import { GROUP_TEAM_IDS } from "@/constants/teams";
 import { groupStageComplete, computeStandings } from "@/lib/standings";
-import type { Modality, ResolvedMatch, TeamId } from "@/lib/types";
+import { rankSwimEvent, swimmingOverall } from "@/lib/swimming";
+import type { Modality, ResolvedMatch, SwimResult, TeamId } from "@/lib/types";
 
 export const POINTS_COLETIVA = [25, 18, 15, 12, 8, 5] as const;
 export const POINTS_INDIVIDUAL = [13, 10, 7, 6, 4, 3] as const;
@@ -97,6 +99,7 @@ export type ModalityPlacement = {
 export function placementsForModality(
   modality: Modality,
   matches: ResolvedMatch[],
+  swimResults: Record<string, SwimResult> = {},
 ): ModalityPlacement[] {
   const teams = participatingTeams(modality);
   const firstPlacePoints = pointsForPlace(modality.category, 1);
@@ -111,6 +114,24 @@ export function placementsForModality(
       penalty: 0,
       net: 0,
     }));
+  }
+
+  if (modality.format === "natacao") {
+    const overall = swimmingOverall(modality.id, swimResults, teams);
+    return GROUP_TEAM_IDS.map((teamId) => {
+      if (modality.excludedTeams?.includes(teamId)) {
+        return { teamId, place: null, points: 0, walkovers: 0, penalty: 0, net: 0 };
+      }
+      const row = overall.find((item) => item.teamId === teamId)!;
+      return {
+        teamId,
+        place: row.place,
+        points: row.points,
+        walkovers: 0,
+        penalty: row.penalty,
+        net: row.net,
+      };
+    });
   }
 
   if (modality.format === "round-robin") {
@@ -161,7 +182,10 @@ export type RankingEntry = {
   breakdown: { modality: Modality; place: number | null; net: number; penalty: number }[];
 };
 
-export function computeGeneralRanking(allMatches: ResolvedMatch[]): RankingEntry[] {
+export function computeGeneralRanking(
+  allMatches: ResolvedMatch[],
+  swimResults: Record<string, SwimResult> = {},
+): RankingEntry[] {
   const byModality = new Map<string, ResolvedMatch[]>();
   for (const match of allMatches) {
     const list = byModality.get(match.modalityId) ?? [];
@@ -180,9 +204,23 @@ export function computeGeneralRanking(allMatches: ResolvedMatch[]): RankingEntry
       const placement = placementsForModality(
         modality,
         byModality.get(modality.id) ?? [],
+        swimResults,
       ).find((item) => item.teamId === teamId)!;
       total += placement.net;
-      if (placement.place) {
+      if (modality.format === "natacao") {
+        for (const event of SWIMMING_EVENTS) {
+          const standing = rankSwimEvent(modality.id, event, swimResults).find(
+            (item) => item.teamId === teamId,
+          );
+          if (standing?.place) {
+            placeCounts[standing.place - 1] += 1;
+            if (standing.place === 1) {
+              if (event.kind === "coletiva") firstCollective += 1;
+              else firstIndividual += 1;
+            }
+          }
+        }
+      } else if (placement.place) {
         placeCounts[placement.place - 1] += 1;
         if (placement.place === 1) {
           if (modality.category === "coletiva") firstCollective += 1;

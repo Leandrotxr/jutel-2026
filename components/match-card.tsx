@@ -2,48 +2,50 @@
 
 import { TeamAvatar } from "@/components/team-avatar";
 import { TEAM_BY_ID } from "@/constants/teams";
-import { formatDate, ROUND_LABEL } from "@/lib/bracket";
+import { formatMatchWhen, ROUND_LABEL } from "@/lib/bracket";
 import type { ResolvedMatch } from "@/lib/types";
 
 export function MatchCard({
   match,
   onOpen,
+  canEdit = false,
+  canEditSchedule = false,
 }: {
   match: ResolvedMatch;
   onOpen: (match: ResolvedMatch) => void;
+  canEdit?: boolean;
+  canEditSchedule?: boolean;
 }) {
-  const clickable = match.status !== "pending";
+  const clickable = (canEdit && match.status !== "pending") || canEditSchedule;
   const teamA = match.resolvedA ? TEAM_BY_ID[match.resolvedA] : null;
   const teamB = match.resolvedB ? TEAM_BY_ID[match.resolvedB] : null;
-  const seedLabel =
-    match.seedA && match.seedB ? `${match.seedA}º x ${match.seedB}º` : null;
+  const seedLabel = match.seedA && match.seedB ? `${match.seedA}º x ${match.seedB}º` : null;
+  const statusLabel =
+    match.status === "played"
+      ? match.result &&
+        typeof match.result.penaltyA === "number" &&
+        typeof match.result.penaltyB === "number"
+        ? "Pênaltis"
+        : match.winnerId
+          ? "Encerrado"
+          : "Empate"
+      : match.status === "pending"
+        ? canEditSchedule
+          ? "Horário"
+          : "Aguardando"
+        : canEdit
+          ? "Lançar"
+          : "A jogar";
 
-  return (
-    <button
-      type="button"
-      onClick={() => clickable && onOpen(match)}
-      disabled={!clickable}
-      className="wonder-card w-full p-3 text-left transition enabled:hover:border-[#3ecfcf]/60 enabled:hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
-    >
+  const body = (
+    <>
       <div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-[#d7c4ff]/70">
         <span>
           {ROUND_LABEL[match.round]}
           {seedLabel ? ` · ${seedLabel}` : ""}
           {match.gameNumber ? ` · JG ${match.gameNumber}` : ` · Jogo ${match.slot}`}
         </span>
-        <span className={match.status === "played" ? "text-[#e8c36a]" : ""}>
-        {match.status === "played"
-          ? match.result &&
-            typeof match.result.penaltyA === "number" &&
-            typeof match.result.penaltyB === "number"
-            ? "Pênaltis"
-            : match.winnerId
-              ? "Encerrado"
-              : "Empate"
-          : clickable
-            ? "Lançar"
-            : "Aguardando"}
-        </span>
+        <span className={match.status === "played" ? "text-[#e8c36a]" : ""}>{statusLabel}</span>
       </div>
       <div className="flex items-center gap-3">
         <TeamAvatar teamId={match.resolvedA} />
@@ -57,8 +59,7 @@ export function MatchCard({
             <span className="mx-2 text-sm text-white/35">:</span>
             {typeof match.result?.scoreB === "number" ? match.result.scoreB : "—"}
           </p>
-          {typeof match.result?.penaltyA === "number" &&
-          typeof match.result?.penaltyB === "number" ? (
+          {typeof match.result?.penaltyA === "number" && typeof match.result?.penaltyB === "number" ? (
             <p className="mt-1 text-xs tracking-wide text-[#e8c36a]">
               Pên. {match.result.penaltyA}–{match.result.penaltyB}
             </p>
@@ -67,11 +68,24 @@ export function MatchCard({
         <TeamAvatar teamId={match.resolvedB} />
       </div>
       {(() => {
-        const meta = [formatDate(match.date), match.venue].filter(Boolean).join(" · ");
+        const meta = formatMatchWhen(match);
         const wo = match.result?.walkover ? "W.O." : "";
         const line = [meta, wo].filter(Boolean).join(" · ");
         return line ? <p className="mt-3 text-center text-[11px] text-white/45">{line}</p> : null;
       })()}
+    </>
+  );
+
+  const className =
+    "wonder-card w-full p-3 text-left transition enabled:hover:border-[#3ecfcf]/60 enabled:hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70";
+
+  if (!clickable) {
+    return <div className={`${className} cursor-default opacity-95`}>{body}</div>;
+  }
+
+  return (
+    <button type="button" onClick={() => onOpen(match)} className={className}>
+      {body}
     </button>
   );
 }

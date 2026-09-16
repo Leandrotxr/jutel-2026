@@ -10,11 +10,15 @@ export function GroupStage({
   matches,
   standings,
   onOpen,
+  canEdit = false,
+  canEditSchedule = false,
 }: {
   modality: Modality;
   matches: ResolvedMatch[];
   standings: StandingRow[];
   onOpen: (match: ResolvedMatch) => void;
+  canEdit?: boolean;
+  canEditSchedule?: boolean;
 }) {
   const groupMatches = matches
     .filter((match) => match.round === "group")
@@ -51,9 +55,15 @@ export function GroupStage({
       />
 
       <div className="grid gap-3 md:grid-cols-2">
-        {visible.map((match) => (
-          <MatchCard key={match.id} match={match} onOpen={onOpen} />
-        ))}
+          {visible.map((match) => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              onOpen={onOpen}
+              canEdit={canEdit}
+              canEditSchedule={canEditSchedule}
+            />
+          ))}
       </div>
     </section>
   );

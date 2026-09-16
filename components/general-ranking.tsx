@@ -3,11 +3,17 @@
 import { TeamAvatar } from "@/components/team-avatar";
 import { TEAM_BY_ID } from "@/constants/teams";
 import { computeGeneralRanking, POINTS_COLETIVA, POINTS_INDIVIDUAL } from "@/lib/ranking";
-import type { ResolvedMatch } from "@/lib/types";
+import type { ResolvedMatch, SwimResult } from "@/lib/types";
 import { useMemo, useState } from "react";
 
-export function GeneralRanking({ matches }: { matches: ResolvedMatch[] }) {
-  const ranking = useMemo(() => computeGeneralRanking(matches), [matches]);
+export function GeneralRanking({
+  matches,
+  swimResults = {},
+}: {
+  matches: ResolvedMatch[];
+  swimResults?: Record<string, SwimResult>;
+}) {
+  const ranking = useMemo(() => computeGeneralRanking(matches, swimResults), [matches, swimResults]);
   const [open, setOpen] = useState<string | null>(ranking[0]?.teamId ?? null);
 
   return (

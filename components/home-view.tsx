@@ -5,13 +5,15 @@ import { ModalityCard } from "@/components/modality-card";
 import { TeamAvatar } from "@/components/team-avatar";
 import { MODALITIES, MODALITY_GROUPS } from "@/constants/modalities";
 import { TEAMS } from "@/constants/teams";
+import { useAuth } from "@/contexts/auth";
 import { useTournament } from "@/contexts/tournament";
 import { useMemo, useState } from "react";
 
 const FILTERS = ["todas", "masculino", "feminino", "misto"] as const;
 
 export function HomeView() {
-  const { matches } = useTournament();
+  const { matches, swimResults } = useTournament();
+  const { ready, canViewGeneralRanking } = useAuth();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("todas");
 
   const visible = useMemo(
@@ -45,7 +47,7 @@ export function HomeView() {
         </div>
       </section>
 
-      <GeneralRanking matches={matches} />
+      {ready && canViewGeneralRanking ? <GeneralRanking matches={matches} swimResults={swimResults} /> : null}
 
       <section>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -85,6 +87,7 @@ export function HomeView() {
                       key={modality.id}
                       modality={modality}
                       matches={matches.filter((match) => match.modalityId === modality.id)}
+                      swimResults={swimResults}
                     />
                   ))}
                 </div>

@@ -1,10 +1,12 @@
+import type { UserRole } from "@/lib/auth/constants";
+
 export type TeamId = "inatel" | "fepi" | "if" | "univas" | "lau" | "fdsm";
 
 export type Gender = "masculino" | "feminino" | "misto";
 
 export type ModalityCategory = "coletiva" | "dupla" | "individual";
 
-export type ModalityFormat = "mata-mata" | "grupos" | "round-robin" | "em-breve";
+export type ModalityFormat = "mata-mata" | "grupos" | "round-robin" | "natacao" | "em-breve";
 
 export type RoundId = "group" | "qf" | "sf" | "final";
 
@@ -47,6 +49,13 @@ export type MatchSeed = {
   seedB?: number;
   venue?: string;
   date?: string;
+  time?: string;
+};
+
+export type MatchSchedule = {
+  date?: string;
+  time?: string;
+  venue?: string;
 };
 
 export type MatchResult = {
@@ -77,4 +86,30 @@ export type StandingRow = {
   diff: number;
   position: number;
   qualified: boolean;
+};
+
+export type { UserRole };
+
+export type UserProfile = {
+  id: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  role: UserRole;
+  createdAt: string;
+};
+
+export type SwimEventKind = "individual" | "coletiva";
+
+export type SwimEvent = {
+  id: string;
+  name: string;
+  kind: SwimEventKind;
+};
+
+export type SwimResult = {
+  timeCs?: number;
+  walkover?: boolean;
+  dns?: boolean;
+  tiebreak?: number;
 };

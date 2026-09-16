@@ -4,9 +4,10 @@ import { GroupStage } from "@/components/group-stage";
 import { MatchCard } from "@/components/match-card";
 import { ScoreModal } from "@/components/score-modal";
 import { TEAM_BY_ID } from "@/constants/teams";
+import { useAuth } from "@/contexts/auth";
 import { championOf } from "@/lib/bracket";
 import { computeStandings } from "@/lib/standings";
-import type { Modality, ResolvedMatch } from "@/lib/types";
+import type { MatchResult, MatchSchedule, Modality, ResolvedMatch } from "@/lib/types";
 import { useState } from "react";
 
 const COLUMNS: { key: ResolvedMatch["round"]; title: string }[] = [
@@ -20,12 +21,15 @@ export function Bracket({
   matches,
   onSave,
   onClear,
+  onSaveSchedule,
 }: {
   modality: Modality;
   matches: ResolvedMatch[];
-  onSave: (matchId: string, result: { scoreA: number; scoreB: number; walkover?: boolean }) => Promise<void>;
+  onSave: (matchId: string, result: MatchResult) => Promise<void>;
   onClear: (matchId: string) => Promise<void>;
+  onSaveSchedule: (matchId: string, schedule: MatchSchedule) => Promise<void>;
 }) {
+  const { canEditScores, canManageSchedule } = useAuth();
   const [selected, setSelected] = useState<ResolvedMatch | null>(null);
   const champion = championOf(matches);
   const championTeam = champion ? TEAM_BY_ID[champion] : null;
@@ -53,6 +57,8 @@ export function Bracket({
           matches={matches}
           standings={standings}
           onOpen={setSelected}
+          canEdit={canEditScores}
+          canEditSchedule={canManageSchedule}
         />
       ) : null}
 
@@ -66,20 +72,29 @@ export function Bracket({
                 {column.title}
               </h2>
               {roundMatches.map((match) => (
-                <MatchCard key={match.id} match={match} onOpen={setSelected} />
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  onOpen={setSelected}
+                  canEdit={canEditScores}
+                  canEditSchedule={canManageSchedule}
+                />
               ))}
             </section>
           );
         })}
       </div>
 
-      {selected ? (
+      {selected && (canEditScores || canManageSchedule) ? (
         <ScoreModal
           match={selected}
           modality={modality}
+          canEditScores={canEditScores}
+          canManageSchedule={canManageSchedule}
           onClose={() => setSelected(null)}
           onSave={(result) => onSave(selected.id, result)}
           onClear={() => onClear(selected.id)}
+          onSaveSchedule={(schedule) => onSaveSchedule(selected.id, schedule)}
         />
       ) : null}
     </div>
