@@ -1,7 +1,7 @@
 "use client";
 
 import type { UserRole } from "@/lib/auth/constants";
-import { canEditScores, canManageSchedule, canManageUsers, canViewGeneralRanking } from "@/lib/auth/permissions";
+import { canEditScores, canManageSchedule, canManageUsers } from "@/lib/auth/permissions";
 import {
   isValidCpf,
   isValidEmail,
@@ -38,7 +38,6 @@ type AuthContextValue = {
   canEditScores: boolean;
   canManageUsers: boolean;
   canManageSchedule: boolean;
-  canViewGeneralRanking: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (input: SignUpInput) => Promise<"session" | "confirm-email">;
   signOut: () => Promise<void>;
@@ -191,7 +190,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       canEditScores: canEditScores(role),
       canManageUsers: canManageUsers(role),
       canManageSchedule: canManageSchedule(role),
-      canViewGeneralRanking: canViewGeneralRanking(role),
       signIn,
       signUp,
       signOut,

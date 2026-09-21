@@ -50,13 +50,11 @@ export function ModalityCard({
       <p className="mt-4 text-sm text-white/60">
         {championTeam
           ? `${modality.format === "natacao" && swimPlayed < 6 ? "Líder" : "Campeão"}: ${championTeam.shortName}`
-          : modality.excludedNote
-            ? modality.excludedNote
-            : modality.format === "em-breve"
-              ? "Em breve"
-              : modality.format === "natacao"
-                ? `${swimPlayed} prova${swimPlayed === 1 ? "" : "s"} lançada${swimPlayed === 1 ? "" : "s"}`
-                : `${played} jogo${played === 1 ? "" : "s"} lançado${played === 1 ? "" : "s"}`}
+          : modality.format === "em-breve"
+            ? "Em breve"
+            : modality.format === "natacao"
+              ? `${swimPlayed} prova${swimPlayed === 1 ? "" : "s"} lançada${swimPlayed === 1 ? "" : "s"}`
+              : `${played} jogo${played === 1 ? "" : "s"} lançado${played === 1 ? "" : "s"}`}
       </p>
     </Link>
   );

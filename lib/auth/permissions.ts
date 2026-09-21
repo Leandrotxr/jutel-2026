@@ -11,7 +11,3 @@ export function canManageUsers(role: UserRole | null | undefined) {
 export function canManageSchedule(role: UserRole | null | undefined) {
   return role === "diretor";
 }
-
-export function canViewGeneralRanking(role: UserRole | null | undefined) {
-  return role === "diretor";
-}
